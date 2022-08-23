@@ -1,5 +1,6 @@
 package com.app.self.service;
 
+import com.app.self.dto.ResponseUser;
 import com.app.self.dto.SignUp;
 import com.app.self.entity.Role_EO;
 import com.app.self.entity.User_EO;
@@ -12,6 +13,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static com.app.self.exception.MessageConstants.*;
 
@@ -33,8 +36,8 @@ public class UserServiceImpl implements UserService {
     public ResponseEntity registerUser(SignUp signUp) {
         log.info("</> Started registering user");
         try {
-            log.info("</> Success {}", USER_REGISTERED);
             userEORepository.save(mapToUser_EO(signUp));
+            log.info("</> Success {}", USER_REGISTERED);
             return ResponseEntity.accepted().body(USER_REGISTERED);
         } catch (Exception e) {
             e.printStackTrace();
@@ -56,10 +59,15 @@ public class UserServiceImpl implements UserService {
         try {
             User_EO user_eo = userEORepository.findById(id).orElseThrow(() -> new UserNotFoundException(USER_WITH_THIS_ID_NOT_EXIST));
             log.info("</> Success {}", USER_FOUND);
-            return ResponseEntity.ok().body(user_eo);
+            return ResponseEntity.ok().body(mapToResponseUser(user_eo));
         } catch (UserNotFoundException e) {
             log.info("</> Failure {}", USER_NOT_FOUND);
             return ResponseEntity.ok().body(e.getMessage());
         }
+    }
+
+    private ResponseUser mapToResponseUser(User_EO user_eo) {
+        Set<String> roles = user_eo.getRoles().stream().map(Role_EO::getTitle).collect(Collectors.toSet());
+        return new ResponseUser(user_eo.getUsername(), roles);
     }
 }
