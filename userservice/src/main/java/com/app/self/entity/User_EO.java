@@ -1,12 +1,12 @@
 package com.app.self.entity;
 
-import lombok.Builder;
 import lombok.Getter;
+import lombok.Setter;
 
 import javax.persistence.*;
-import java.util.List;
+import java.util.Collection;
 
-@Getter @Builder
+@Getter @Setter
 @Entity(name = "USER_EO")
 public class User_EO {
 
@@ -15,7 +15,17 @@ public class User_EO {
     private Integer id;
     private String username;
     private String password;
-    @OneToMany @JoinColumn(name = "user_id", referencedColumnName = "id")
-    private List<USER_ROLE_EO> roles;
-
+    @ManyToMany
+    @JoinTable(
+            name = "USER_ROLE_EO",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "role_id")
+    )
+    private Collection<Role_EO> roles;
+    public User_EO() {}
+    public User_EO(String username, String password, Collection<Role_EO> roles) {
+        this.username = username;
+        this.password = password;
+        this.roles = roles;
+    }
 }
